@@ -23,32 +23,22 @@ var (
 
 	duration = prometheus.NewHistogramVec(
 		prometheus.HistogramOpts{
-			Name: "request_duration_seconds",
-			Help: "A histogram of latencies for requests.",
+			Name:    "request_duration_seconds",
+			Help:    "A histogram of latencies for requests.",
+			Buckets: []float64{.01, .05, .1, .2, .3, .4, .5, 1, 2},
 		},
 		[]string{"handler", "method"},
-	)
-
-	responseSize = prometheus.NewHistogramVec(
-		prometheus.HistogramOpts{
-			Name:    "response_size_bytes",
-			Help:    "A histogram of response sizes for requests.",
-			Buckets: []float64{200, 500, 900, 1500},
-		},
-		[]string{},
 	)
 )
 
 func init() {
-	prometheus.MustRegister(inFlight, counter, duration, responseSize)
+	prometheus.MustRegister(inFlight, counter, duration)
 }
 
 func GenInstrumentChain(name string, handler http.HandlerFunc) http.Handler {
 	return promhttp.InstrumentHandlerInFlight(inFlight,
 		promhttp.InstrumentHandlerDuration(duration.MustCurryWith(prometheus.Labels{"handler": name}),
-			promhttp.InstrumentHandlerCounter(counter.MustCurryWith(prometheus.Labels{"handler": name}),
-				promhttp.InstrumentHandlerResponseSize(responseSize, handler),
-			),
+			promhttp.InstrumentHandlerCounter(counter.MustCurryWith(prometheus.Labels{"handler": name}), handler),
 		),
 	)
 }
