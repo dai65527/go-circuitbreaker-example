@@ -29,6 +29,7 @@ func settingHandler(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusMethodNotAllowed)
 		return
 	}
+	defer r.Body.Close()
 	r.ParseForm()
 	erValue, err := strconv.Atoi(r.PostFormValue("errorrate"))
 	if err == nil {
