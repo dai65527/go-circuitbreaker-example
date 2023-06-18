@@ -6,6 +6,9 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+
+	"github.com/dai65527/go-circuit-breaker-example/pkg/metrics"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 func pingHandler(w http.ResponseWriter, r *http.Request) {
@@ -38,6 +41,7 @@ func main() {
 		backendEndpoint = os.Getenv("BACKEND_ENDPOINT")
 	}
 	http.HandleFunc("/ping", pingHandler)
-	http.HandleFunc("/do", doHandler)
+	http.Handle("/do", metrics.GenInstrumentChain("frontend.do", doHandler))
+	http.Handle("/metrics", promhttp.Handler())
 	http.ListenAndServe(":8080", nil)
 }

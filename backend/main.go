@@ -7,6 +7,9 @@ import (
 	"net/http"
 	"strconv"
 	"time"
+
+	"github.com/dai65527/go-circuit-breaker-example/pkg/metrics"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 func pingHandler(w http.ResponseWriter, r *http.Request) {
@@ -37,7 +40,7 @@ func settingHandler(w http.ResponseWriter, r *http.Request) {
 // doHandler 何か処理を行うフリ風
 func doHandler(w http.ResponseWriter, r *http.Request) {
 	time.Sleep(time.Duration(latency) * time.Millisecond)
-	if rand.Int63()%100 < int64(errorRate) {
+	if rand.Intn(100) < errorRate {
 		w.WriteHeader(http.StatusInternalServerError)
 		fmt.Fprintf(w, "error")
 		return
@@ -47,7 +50,8 @@ func doHandler(w http.ResponseWriter, r *http.Request) {
 
 func main() {
 	http.HandleFunc("/ping", pingHandler)
-	http.HandleFunc("/do", doHandler)
 	http.HandleFunc("/setting", settingHandler)
+	http.Handle("/do", metrics.GenInstrumentChain("backend.do", doHandler))
+	http.Handle("/metrics", promhttp.Handler())
 	http.ListenAndServe(":18080", nil)
 }
