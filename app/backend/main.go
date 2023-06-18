@@ -5,19 +5,23 @@ import (
 	"log"
 	"math/rand"
 	"net/http"
+	"os"
 	"strconv"
 	"time"
 
-	"github.com/dai65527/go-circuit-breaker-example/pkg/metrics"
+	"github.com/dai65527/go-circuit-breaker-example/app/pkg/metrics"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
+)
+
+var (
+	port          = "18080"
+	errorRate int = 0
+	latency   int = 0
 )
 
 func pingHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "pong")
 }
-
-var errorRate int
-var latency int
 
 // settingHandler エラー率ととレイテンシをセット
 func settingHandler(w http.ResponseWriter, r *http.Request) {
@@ -49,9 +53,12 @@ func doHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
+	if os.Getenv("PORT") != "" {
+		port = os.Getenv("PORT")
+	}
 	http.HandleFunc("/ping", pingHandler)
 	http.HandleFunc("/setting", settingHandler)
 	http.Handle("/do", metrics.GenInstrumentChain("backend.do", doHandler))
 	http.Handle("/metrics", promhttp.Handler())
-	http.ListenAndServe(":18080", nil)
+	http.ListenAndServe(":"+port, nil)
 }

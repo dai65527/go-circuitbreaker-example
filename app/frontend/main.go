@@ -7,15 +7,18 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/dai65527/go-circuit-breaker-example/pkg/metrics"
+	"github.com/dai65527/go-circuit-breaker-example/app/pkg/metrics"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
+)
+
+var (
+	backendEndpoint = "http://localhost:18080"
+	port            = "8080"
 )
 
 func pingHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "pong")
 }
-
-var backendEndpoint = "http://localhost:18080"
 
 func do(ctx context.Context) error {
 	resp, err := http.Get(backendEndpoint + "/do")
@@ -40,8 +43,11 @@ func main() {
 	if os.Getenv("BACKEND_ENDPOINT") != "" {
 		backendEndpoint = os.Getenv("BACKEND_ENDPOINT")
 	}
+	if os.Getenv("PORT") != "" {
+		port = os.Getenv("PORT")
+	}
 	http.HandleFunc("/ping", pingHandler)
 	http.Handle("/do", metrics.GenInstrumentChain("frontend.do", doHandler))
 	http.Handle("/metrics", promhttp.Handler())
-	http.ListenAndServe(":8080", nil)
+	http.ListenAndServe(":"+port, nil)
 }

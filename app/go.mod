@@ -1,4 +1,4 @@
-module github.com/dai65527/go-circuit-breaker-example
+module github.com/dai65527/go-circuit-breaker-example/app
 
 go 1.20
 
