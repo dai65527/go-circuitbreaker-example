@@ -26,10 +26,17 @@ services:
   prometheus:
     image: prom/prometheus:v2.37.8
     volumes:
-      - ./prometheus:/etc/prometheus
+      - ./prometheus/config:/etc/prometheus
+      - ./prometheus/data:/prometheus
     command: "--config.file=/etc/prometheus/prometheus.yaml"
     ports:
       - 9090:9090
     depends_on:
       - backend
       - frontend
+  grafana:
+    image: grafana/grafana:8.2.6
+    volumes:
+      - ./grafana/data:/var/lib/grafana
+    ports:
+      - 3000:3000
