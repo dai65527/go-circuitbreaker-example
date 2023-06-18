@@ -1,0 +1,11 @@
+global:
+  scrape_interval: 5s
+  external_labels:
+    monitor: sample-monitor
+scrape_configs:
+  - job_name: backend
+    static_configs:
+      - targets: ['backend:18080']
+  - job_name: frontend
+    static_configs:
+      - targets: ['frontend:8080']

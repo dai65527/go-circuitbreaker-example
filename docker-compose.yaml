@@ -23,3 +23,13 @@ services:
       - 8080:8080
     depends_on:
       - backend
+  prometheus:
+    image: prom/prometheus:v2.37.8
+    volumes:
+      - ./prometheus:/etc/prometheus
+    command: "--config.file=/etc/prometheus/prometheus.yaml"
+    ports:
+      - 9090:9090
+    depends_on:
+      - backend
+      - frontend
